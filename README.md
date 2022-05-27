@@ -14,11 +14,11 @@ npm run dev
 
 
 ## Настройка VSCode (установить плагины):
-ESLint
-Prettier
-Vetur
-Cobalt2 Theme Official
-Markdown All in One
+1. ESLint - подсвечивает возможные ошибки
+2. Prettier - автоформатирование
+3. Vetur - подсвечивает синтаксис
+4. Cobalt2 Theme Official - тёмная тема
+5. Markdown All in One
 
 Vue Language Features (Volar) - рекомендует сама VSCode - не ставим, у него глючная подсветка svg
 
