@@ -5,8 +5,9 @@ Link: https://youtu.be/0MEpPU3rWCk
 
 
 ## Создание проекта
-```bash
+```
 npm create vite@latest cryptonomicon -- --template vue
+cd cryptonomicon
 npm install 
 npm run dev
 ```
