@@ -14,19 +14,18 @@ npm run dev
 
 
 ## Настройка VSCode (установить плагины):
-1. ESLint - подсвечивает возможные ошибки
-2. Prettier - автоформатирование
-3. Vetur - подсвечивает синтаксис
-4. Cobalt2 Theme Official - тёмная тема
-5. Markdown All in One
-
-Vue Language Features (Volar) - рекомендует сама VSCode - не ставим, у него глючная подсветка svg
+* ESLint - подсвечивает возможные ошибки
+* Prettier - автоформатирование
+* Vetur - подсвечивает синтаксис
+* Cobalt2 Theme Official - тёмная тема
+* Markdown All in One
+* Vue Language Features (Volar) - рекомендует сама VSCode - **не ставим**, у него глючная подсветка svg
 
 
 
 ## Полезные ссылки
-Исходный код урока - https://gitlab.com/vuejs-club/youtube-course/cryptonomicon/-/tree/lesson1
-API для получения ключа: https://www.cryptocompare.com/
+* Исходный код урока - https://gitlab.com/vuejs-club/youtube-course/cryptonomicon/-/tree/lesson1
+* API для получения ключа: https://www.cryptocompare.com/
 
 
 ## Горячие кнопки в VSCode
