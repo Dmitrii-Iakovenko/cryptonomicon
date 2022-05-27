@@ -1,5 +1,5 @@
 
-# Учебный прокт по изучению Vue
+# Учебный проект по изучению Vue
 
 Link: https://youtu.be/0MEpPU3rWCk
 
