@@ -9,6 +9,9 @@ Link: https://youtu.be/0MEpPU3rWCk
 npm create vite@latest cryptonomicon -- --template vue
 cd cryptonomicon
 npm install 
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+npm install -D @tailwindcss/forms
 npm run dev
 ```
 
@@ -20,6 +23,7 @@ npm run dev
 * Vetur - подсвечивает синтаксис
 * Cobalt2 Theme Official - тёмная тема
 * Markdown All in One
+* Tailwind CSS IntelliSense
 * Vue Language Features (Volar) - рекомендует сама VSCode - **не ставим**, у него глючная подсветка svg
 
 
