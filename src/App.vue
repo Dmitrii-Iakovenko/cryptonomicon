@@ -159,9 +159,16 @@ export default {
     return {
       ticker: '',
       tickers: [],
+      allTickers: [],
       sel: null,
       graph: []
     }
+  },
+
+  mounted() {
+    fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
+      .then(response => response.json())
+      .then(data => this.allTickers = data.Data)
   },
 
   methods: {
