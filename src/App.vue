@@ -15,7 +15,7 @@
               >Тикер</label
             >
             <div class="mt-1 relative rounded-md shadow-md">
-                <!-- v-on:chankge="add" -->
+              <!-- v-on:chankge="add" -->
               <input
                 v-model="ticker"
                 @keydown.enter="addTicker(this.ticker)"
@@ -30,8 +30,8 @@
             <!-- autocomplete -->
             <template v-if="autocomplete.length">
               <div class="flex bg-white p-1 rounded-md shadow-md flex-wrap">
-                <span 
-                  v-for="ticker in autocomplete" 
+                <span
+                  v-for="ticker in autocomplete"
                   :key="ticker.name"
                   @click="addTicker(ticker.name)"
                   class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
@@ -39,8 +39,12 @@
                   {{ ticker.name }}
                 </span>
               </div>
-              <div v-if="autocompleteError" class="text-sm text-red-600">Такой тикер уже добавлен</div>
-              <div v-if="notFoundError" class="text-sm text-red-600">Такой тикер не существует</div>
+              <div v-if="autocompleteError" class="text-sm text-red-600">
+                Такой тикер уже добавлен
+              </div>
+              <div v-if="notFoundError" class="text-sm text-red-600">
+                Такой тикер не существует
+              </div>
             </template>
           </div>
         </div>
@@ -68,13 +72,28 @@
 
       <template v-if="tickers.length">
         <hr class="w-full border-t border-gray-600 my-4" />
+        <div>
+          <button
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Вперёд
+          </button> 
+          <button
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Назад
+          </button>
+          <div>Фильтр: <input v-model="filter" /></div>
+        </div>
+
+        <hr class="w-full border-t border-gray-600 my-4" />
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div
-            v-for="t in tickers"
+            v-for="t in filteredTickers()"
             :key="t.name"
             @click="select(t)"
             :class="{
-              'border-4': sel === t
+              'border-4': sel === t,
             }"
             class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
           >
@@ -82,7 +101,9 @@
               <dt class="text-sm font-medium text-gray-500 truncate">
                 {{ t.name }} - USD
               </dt>
-              <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ t.price }}</dd>
+              <dd class="mt-1 text-3xl font-semibold text-gray-900">
+                {{ t.price }}
+              </dd>
             </div>
             <div class="w-full border-t border-gray-200"></div>
             <button
@@ -111,16 +132,16 @@
             {{ sel.name }} - USD
           </h3>
           <div class="flex items-end border-gray-600 border-b border-l h-64">
-            <div 
+            <div
               v-for="(bar, idx) in normalizeGraph()"
               :key="idx"
               :style="{ height: `${bar}%` }"
-              class="bg-purple-800 border w-10">
-            </div>
+              class="bg-purple-800 border w-10"
+            ></div>
           </div>
-          <button 
+          <button
             @click="sel = null"
-            type="button" 
+            type="button"
             class="absolute top-0 right-0"
           >
             <svg
@@ -157,57 +178,64 @@ export default {
 
   data() {
     return {
-      ticker: '',
+      ticker: "",
       tickers: [],
       allTickers: [],
       autocomplete: [],
       autocompleteError: false,
       notFoundError: false,
       sel: null,
-      graph: []
-    }
+      graph: [],
+      page: 1,
+      filter: ""
+    };
   },
 
   created() {
     const tickersData = localStorage.getItem("cryptonomicon-list");
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
-      this.tickers.forEach(ticker => {
+      this.tickers.forEach((ticker) => {
         this.supscribeToUpdates(ticker.name);
       });
     }
   },
 
   mounted() {
-    fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
-      .then(response => response.json())
-      .then(data => Object.values(data.Data).forEach(ticker => {
-        const newTicker = {
-          name: ticker.Symbol,
-          search: ticker.FullName.toUpperCase() + ticker.Symbol.toUpperCase()
-        }
-        this.allTickers.push(newTicker);
-      }));
+    fetch("https://min-api.cryptocompare.com/data/all/coinlist?summary=true")
+      .then((response) => response.json())
+      .then((data) =>
+        Object.values(data.Data).forEach((ticker) => {
+          const newTicker = {
+            name: ticker.Symbol,
+            search: ticker.FullName.toUpperCase() + ticker.Symbol.toUpperCase(),
+          };
+          this.allTickers.push(newTicker);
+        })
+      );
   },
 
   methods: {
+    filteredTickers() {
+      return this.tickers.filter(ticker => ticker.name.includes(this.filter.toUpperCase()));
+    },
+
     supscribeToUpdates(tickerName) {
       var myTimer = setInterval(async () => {
         const f = await fetch(
           `https://min-api.cryptocompare.com/data/price?fsym=${tickerName}&tsyms=USD&api_key=22011ad9970258f25ff1167ad859166a37782ff8de3b684f78edb72dc7de0fc7`
         );
         const data = await f.json();
-        const ticker = this.tickers
-          .find(t => t.name === tickerName);
+        const ticker = this.tickers.find((t) => t.name === tickerName);
         if (ticker) {
-          ticker.price = data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
-        }
-        else clearInterval(myTimer);
+          ticker.price =
+            data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+        } else clearInterval(myTimer);
 
         if (this.sel?.name === tickerName) {
           this.graph.push(data.USD);
         }
-      }, 5000)
+      }, 5000);
     },
 
     addTicker(name) {
@@ -216,22 +244,26 @@ export default {
       this.autocompleteError = false;
       this.notFoundError = false;
 
-
       // check for non-uniqueness
-      if (this.tickers.filter(ticker => ticker.name.toUpperCase() === name).length > 0) {
+      if (
+        this.tickers.filter((ticker) => ticker.name.toUpperCase() === name)
+          .length > 0
+      ) {
         this.autocompleteError = true;
         return;
       }
 
       // check ticker for correct
-      if (this.allTickers.filter(ticker => ticker.name === name).length === 0) {
+      if (
+        this.allTickers.filter((ticker) => ticker.name === name).length === 0
+      ) {
         this.notFoundError = true;
         return;
       }
 
       const carrentTicker = {
         name: name,
-        price: "-"
+        price: "-",
       };
 
       this.tickers.push(carrentTicker);
@@ -239,28 +271,28 @@ export default {
       localStorage.setItem("cryptonomicon-list", JSON.stringify(this.tickers));
       this.supscribeToUpdates(carrentTicker.name);
 
-
       this.select(carrentTicker);
       this.ticker = "";
+      this.filter = "";
       this.changeAutocomplete();
     },
 
     removeTicker(tickerToRemove) {
-      this.tickers = this.tickers.filter(t => t != tickerToRemove);
-    }, 
+      this.tickers = this.tickers.filter((t) => t != tickerToRemove);
+    },
 
     normalizeGraph() {
       const maxValue = Math.max(...this.graph);
       const minValue = Math.min(...this.graph);
       return this.graph.map(
-        price => 5 + (price - minValue) * 95 / (maxValue - minValue)
+        (price) => 5 + ((price - minValue) * 95) / (maxValue - minValue)
       );
     },
 
     select(ticker) {
       this.sel = ticker;
       this.graph = [];
-    }, 
+    },
 
     changeAutocomplete() {
       this.autocomplete = [];
@@ -274,8 +306,8 @@ export default {
           this.autocomplete.push(ticker);
         }
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
