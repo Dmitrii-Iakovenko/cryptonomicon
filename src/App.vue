@@ -40,6 +40,7 @@
                 </span>
               </div>
               <div v-if="autocompleteError" class="text-sm text-red-600">Такой тикер уже добавлен</div>
+              <div v-if="notFoundError" class="text-sm text-red-600">Такой тикер не существует</div>
             </template>
           </div>
         </div>
@@ -161,6 +162,7 @@ export default {
       allTickers: [],
       autocomplete: [],
       autocompleteError: false,
+      notFoundError: false,
       sel: null,
       graph: []
     }
@@ -182,10 +184,22 @@ export default {
     addTicker(name) {
       name = name.toUpperCase();
 
+      this.autocompleteError = false;
+      this.notFoundError = false;
+
+
+      // check for non-uniqueness
       if (this.tickers.filter(ticker => ticker.name.toUpperCase() === name).length > 0) {
         this.autocompleteError = true;
         return;
       }
+
+      // check ticker for correct
+      if (this.allTickers.filter(ticker => ticker.name === name).length === 0) {
+        this.notFoundError = true;
+        return;
+      }
+
 
       const carrentTicker = {
         name: name,
@@ -230,6 +244,7 @@ export default {
     changeAutocomplete() {
       this.autocomplete = [];
       this.autocompleteError = false;
+      this.notFoundError = false;
       if (this.ticker === "") return;
       const tag = this.ticker.toUpperCase();
       for (const ticker of this.allTickers) {
