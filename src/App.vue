@@ -200,26 +200,30 @@ export default {
         return;
       }
 
-
       const carrentTicker = {
         name: name,
         price: "-"
       };
 
       this.tickers.push(carrentTicker);
-      setInterval(async () => {
+      var myTimer = setInterval(async () => {
         const f = await fetch(
           `https://min-api.cryptocompare.com/data/price?fsym=${carrentTicker.name}&tsyms=USD&api_key=22011ad9970258f25ff1167ad859166a37782ff8de3b684f78edb72dc7de0fc7`
         );
         const data = await f.json();
-        this.tickers
-          .find(t => t.name === carrentTicker.name)
-          .price = data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+        const ticker = this.tickers
+          .find(t => t.name === carrentTicker.name);
+        if (ticker) {
+          ticker.price = data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+        }
+        else clearInterval(myTimer);
 
-          if (this.sel?.name === carrentTicker.name) {
-            this.graph.push(data.USD);
-          }
+        if (this.sel?.name === carrentTicker.name) {
+          this.graph.push(data.USD);
+        }
       }, 5000)
+
+      this.select(carrentTicker);
       this.ticker = "";
       this.changeAutocomplete();
     },
