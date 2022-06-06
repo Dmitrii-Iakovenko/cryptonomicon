@@ -18,7 +18,7 @@
                 <!-- v-on:chankge="add" -->
               <input
                 v-model="ticker"
-                @keydown.enter="addTicker"
+                @keydown.enter="addTicker(this.ticker)"
                 @input="changeAutocomplete"
                 type="text"
                 name="wallet"
@@ -32,7 +32,8 @@
               <div class="flex bg-white p-1 rounded-md shadow-md flex-wrap">
                 <span 
                   v-for="ticker in autocomplete" 
-                  :key="ticker.Symbol"
+                  :key="ticker.name"
+                  @click="addTicker(ticker.name)"
                   class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
                 >
                   {{ ticker.name }}
@@ -43,7 +44,7 @@
           </div>
         </div>
         <button
-          @click="addTicker"
+          @click="addTicker(this.ticker)"
           type="button"
           class="my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
         >
@@ -178,9 +179,9 @@ export default {
   },
 
   methods: {
-    addTicker() {
+    addTicker(name) {
       const carrentTicker = {
-        name: this.ticker,
+        name: name.toUpperCase(),
         price: "-"
       };
 
@@ -199,6 +200,7 @@ export default {
           }
       }, 5000)
       this.ticker = "";
+      this.changeAutocomplete();
     },
 
     removeTicker(tickerToRemove) {
