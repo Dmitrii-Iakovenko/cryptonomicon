@@ -180,8 +180,15 @@ export default {
 
   methods: {
     addTicker(name) {
+      name = name.toUpperCase();
+
+      if (this.tickers.filter(ticker => ticker.name.toUpperCase() === name).length > 0) {
+        this.autocompleteError = true;
+        return;
+      }
+
       const carrentTicker = {
-        name: name.toUpperCase(),
+        name: name,
         price: "-"
       };
 
@@ -222,6 +229,7 @@ export default {
 
     changeAutocomplete() {
       this.autocomplete = [];
+      this.autocompleteError = false;
       if (this.ticker === "") return;
       const tag = this.ticker.toUpperCase();
       for (const ticker of this.allTickers) {
