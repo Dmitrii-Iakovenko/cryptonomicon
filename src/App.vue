@@ -19,6 +19,7 @@
               <input
                 v-model="ticker"
                 @keydown.enter="addTicker"
+                @input="changeAutocomplete"
                 type="text"
                 name="wallet"
                 id="wallet"
@@ -27,21 +28,18 @@
               />
             </div>
             <!-- autocomplete -->
-            <div class="flex bg-white p-1 rounded-md shadow-md flex-wrap">
-              <span class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer">
-                BTC
-              </span>
-              <span class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer">
-                DOGE
-              </span>
-              <span class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer">
-                BCH
-              </span>
-              <span class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer">
-                CHD
-              </span>
-            </div>
-            <div class="text-sm text-red-600">Такой тикер уже добавлен</div>
+            <template v-if="autocomplete.length">
+              <div class="flex bg-white p-1 rounded-md shadow-md flex-wrap">
+                <span 
+                  v-for="ticker in autocomplete" 
+                  :key="ticker.Symbol"
+                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
+                >
+                  {{ ticker.name }}
+                </span>
+              </div>
+              <div v-if="autocompleteError" class="text-sm text-red-600">Такой тикер уже добавлен</div>
+            </template>
           </div>
         </div>
         <button
@@ -160,6 +158,8 @@ export default {
       ticker: '',
       tickers: [],
       allTickers: [],
+      autocomplete: [],
+      autocompleteError: false,
       sel: null,
       graph: []
     }
@@ -169,7 +169,11 @@ export default {
     fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
       .then(response => response.json())
       .then(data => Object.values(data.Data).forEach(ticker => {
-        this.allTickers.push(ticker);
+        const newTicker = {
+          name: ticker.Symbol,
+          search: ticker.FullName.toUpperCase() + ticker.Symbol.toUpperCase()
+        }
+        this.allTickers.push(newTicker);
       }));
   },
 
@@ -212,6 +216,18 @@ export default {
     select(ticker) {
       this.sel = ticker;
       this.graph = [];
+    }, 
+
+    changeAutocomplete() {
+      this.autocomplete = [];
+      if (this.ticker === "") return;
+      const tag = this.ticker.toUpperCase();
+      for (const ticker of this.allTickers) {
+        if (this.autocomplete.length >= 4) break;
+        if (ticker.search.includes(tag)) {
+          this.autocomplete.push(ticker);
+        }
+      }
     }
   }
 };
