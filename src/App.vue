@@ -75,15 +75,19 @@
         <div>
           <button
             class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            @click="this.page++"
+            v-if="this.hasNextPage"
           >
             Вперёд
-          </button> 
+          </button>
           <button
             class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            @click="this.page--"
+            v-if="this.page > 1"
           >
             Назад
           </button>
-          <div>Фильтр: <input v-model="filter" /></div>
+          <div>Фильтр: <input v-model="filter" @change="this.page = 1" /></div>
         </div>
 
         <hr class="w-full border-t border-gray-600 my-4" />
@@ -187,7 +191,8 @@ export default {
       sel: null,
       graph: [],
       page: 1,
-      filter: ""
+      hasNextPage: true,
+      filter: "",
     };
   },
 
@@ -217,7 +222,15 @@ export default {
 
   methods: {
     filteredTickers() {
-      return this.tickers.filter(ticker => ticker.name.includes(this.filter.toUpperCase()));
+      const start = 6 * (this.page - 1);
+      const end = 6 * this.page;
+
+      const filteredTickers = this.tickers.filter(ticker =>
+        ticker.name.includes(this.filter)
+      );
+      this.hasNextPage = end < filteredTickers.length;
+
+      return filteredTickers.slice(start, end);
     },
 
     supscribeToUpdates(tickerName) {
