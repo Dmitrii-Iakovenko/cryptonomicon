@@ -19,7 +19,7 @@
               <input
                 v-model="ticker"
                 @keydown.enter="addTicker(this.ticker)"
-                @input="changeAutocomplete"
+                @input="changeAutocomplete()"
                 type="text"
                 name="wallet"
                 id="wallet"
@@ -197,6 +197,14 @@ export default {
   },
 
   created() {
+    const windowData = Object.fromEntries(new URL(window.location).searchParams.entries());
+    if (windowData.filter) {
+      this.filter = windowData.filter;
+    }
+    if (windowData.page) {
+      this.page = windowData.page;
+    }
+
     const tickersData = localStorage.getItem("cryptonomicon-list");
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
@@ -225,8 +233,8 @@ export default {
       const start = 6 * (this.page - 1);
       const end = 6 * this.page;
 
-      const filteredTickers = this.tickers.filter(ticker =>
-        ticker.name.includes(this.filter)
+      const filteredTickers = this.tickers.filter((ticker) =>
+        ticker.name.includes(this.filter.toUpperCase())
       );
       this.hasNextPage = end < filteredTickers.length;
 
@@ -320,6 +328,24 @@ export default {
         }
       }
     },
+  },
+
+  watch: {
+    filter() {
+      window.history.pushState(
+        null,
+        document.title,
+        `${window.location.pathname}?filter=${this.filter}&page=${this.page}`
+      );
+    },
+
+    page() {
+      window.history.pushState(
+        null,
+        document.title,
+        `${window.location.pathname}?filter=${this.filter}&page=${this.page}`
+      );
+    }
   },
 };
 </script>
