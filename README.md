@@ -3,9 +3,21 @@
 
 Link: https://youtu.be/0MEpPU3rWCk
 
+## Preparing for the Workplace
+* Установить VSCode 
+* Установить Git
+* Установить npm
 
-## Создание проекта
-```
+
+## Создание проекта с GitHub
+git clone https://github.com/Dmitrii-Iakovenko/cryptonomicon
+cd cryptonomicon
+npm install
+npm run dev
+
+
+## Создание проекта с нуля
+```bush
 npm create vite@latest cryptonomicon -- --template vue
 cd cryptonomicon
 npm install 
@@ -18,6 +30,7 @@ npm run dev
 
 
 ## Настройка VSCode (установить плагины):
+* Git Graph
 * ESLint - подсвечивает возможные ошибки
 * Prettier - автоформатирование
 * Vetur - подсвечивает синтаксис
