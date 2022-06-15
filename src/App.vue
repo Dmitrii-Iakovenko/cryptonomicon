@@ -177,22 +177,36 @@
 </template>
 
 <script>
+// 1. Одинаковый код в watch | Критичность: 3
+// 2. При удалении остаётся подписка на загрузку тикера | Критичность: 5
+// 3. Колличество запросов | Критичность: 4
+// 4. Запросы напрямую внутри компонента | Критичность: 5
+// 5. Обработка ошибок API | Критичность: 5
+// 6. | Критичность: 
+// 7. | Критичность: 
+// 8. | Критичность: 
+// 9. localstorage и анонимные вкладки| Критичность: 3
+// 10. Магические строки и числа (URL, 5000 ms, ключ localstorage, колличество тикеров на странице) | Критичность: 1
 export default {
   name: "App",
 
   data() {
     return {
       ticker: "",
+      filter: "",
+
       tickers: [],
-      allTickers: [],
-      autocomplete: [],
-      autocompleteError: false,
-      notFoundError: false,
       sel: null,
+      
       graph: [],
+      
       page: 1,
       hasNextPage: true,
-      filter: "",
+      
+      autocomplete: [],
+      allTickers: [],
+      autocompleteError: false,
+      notFoundError: false,
     };
   },
 
