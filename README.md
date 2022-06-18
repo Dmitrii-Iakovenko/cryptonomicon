@@ -30,14 +30,15 @@ npm run dev
 
 
 ## Настройка VSCode (установить плагины):
-* Git Graph
+* Volar - рекомендуемый плагин для Vue3 и Vite
+* Vetur - не ставим, это для Vue2
+* Git Graph 
 * ESLint - подсвечивает возможные ошибки
-* Prettier - автоформатирование
+* Prettier - автоформатирование (не ставим, всё ломает)
 * Vetur - подсвечивает синтаксис
 * Cobalt2 Theme Official - тёмная тема
 * Markdown All in One
 * Tailwind CSS IntelliSense
-* Vue Language Features (Volar) - рекомендует сама VSCode - **не ставим**, у него глючная подсветка svg
 
 
 
