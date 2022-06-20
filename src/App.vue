@@ -62,7 +62,7 @@
             @click="this.page--" v-if="this.page > 1">
             Назад
           </button>
-          <div>Фильтр: <input v-model="filter" @change="this.page = 1" /></div>
+          <div>Фильтр: <input v-model="filter" @input="this.page = 1" /></div>
         </div>
 
         <hr class="w-full border-t border-gray-600 my-4" />
@@ -117,16 +117,16 @@
 </template>
 
 <script>
-// 6. Наличие в состоянии ЗАВИСИМЫХ ДАНННЫХ | Критичность: 5+
-// 4. Запросы напрямую внутри компонента | Критичность: 5
-// 2. При удалении остаётся подписка на загрузку тикера | Критичность: 5
-// 5. Обработка ошибок API | Критичность: 5
-// 3. Колличество запросов | Критичность: 4
-// 8. При удалении тикера не изменяется localstorage | Критичность: 4
-// 1. Одинаковый код в watch | Критичность: 3
-// 9. localstorage и анонимные вкладки| Критичность: 3
-// 7. График ужасно выглядит если будет много цен | Критичность: 2
-// 10. Магические строки и числа (URL, 5000 ms, ключ localstorage, колличество тикеров на странице) | Критичность: 1
+// [x] 6. Наличие в состоянии ЗАВИСИМЫХ ДАНННЫХ | Критичность: 5+
+// [ ] 4. Запросы напрямую внутри компонента | Критичность: 5
+// [ ] 2. При удалении остаётся подписка на загрузку тикера | Критичность: 5
+// [ ] 5. Обработка ошибок API | Критичность: 5
+// [ ] 3. Колличество запросов | Критичность: 4
+// [x] 8. При удалении тикера не изменяется localstorage | Критичность: 4
+// [x] 1. Одинаковый код в watch | Критичность: 3
+// [ ] 9. localstorage и анонимные вкладки| Критичность: 3
+// [ ] 7. График ужасно выглядит если будет много цен | Критичность: 2
+// [ ] 10. Магические строки и числа (URL, 5000 ms, ключ localstorage, колличество тикеров на странице) | Критичность: 1
 
 // Параллельно
 // [x] График сломан, когда везде одинаковые значения
@@ -134,15 +134,15 @@
 
 
 // Критерии Критичности:
-// [ ] 5 - ошибка архитектуры
-// [ ] 5 - нарушение концепции
-// [ ] 5 - ошибка в бизнес логике нарушающая работу
-// [ ] 4 - сильно не оптимальные алгоритмы
-// [ ] 4 - ошибка в логике, делающая работу неудобной
-// [ ] 3 - нарушение паттернов
-// [ ] 3 - нарушение в логике, проявляющееся в особых ситуациях
-// [ ] 2 - плохой интерфейс
-// [ ] 1 - некачественный код
+// 5 - ошибка архитектуры
+// 5 - нарушение концепции
+// 5 - ошибка в бизнес логике нарушающая работу
+// 4 - сильно не оптимальные алгоритмы
+// 4 - ошибка в логике, делающая работу неудобной
+// 3 - нарушение паттернов
+// 3 - нарушение в логике, проявляющееся в особых ситуациях
+// 2 - плохой интерфейс
+// 1 - некачественный код
 
 export default {
   name: "App",
@@ -201,18 +201,38 @@ export default {
         (price) => 5 + ((price - minValue) * 95) / (maxValue - minValue)
       );
     },
+
+    pageStateOptions() {
+      return {
+        filter: this.filter,
+        page: this.page,
+      };
+    }
   },
 
   created() {
     const windowData = Object.fromEntries(
       new URL(window.location).searchParams.entries()
     );
-    if (windowData.filter) {
-      this.filter = windowData.filter;
-    }
-    if (windowData.page) {
-      this.page = windowData.page;
-    }
+
+    // v1
+    const VALID_KEYS = ["filter", "page"];
+    VALID_KEYS.forEach(key => {
+      if (windowData[key]) {
+        this[key] = windowData[key];
+      }
+    });
+    // 
+    // v2
+    // Object.assign(this, windowData);
+    // 
+    // v3
+    // if (windowData.filter) {
+    //   this.filter = windowData.filter;
+    // }
+    // if (windowData.page) {
+    //   this.page = windowData.page;
+    // }
 
     const tickersData = localStorage.getItem("cryptonomicon-list");
     if (tickersData) {
@@ -284,9 +304,8 @@ export default {
         price: "-",
       };
 
-      this.tickers.push(carrentTicker);
+      this.tickers = [...this.tickers, carrentTicker];
 
-      localStorage.setItem("cryptonomicon-list", JSON.stringify(this.tickers));
       this.supscribeToUpdates(carrentTicker.name);
 
       this.select(carrentTicker);
@@ -329,8 +348,7 @@ export default {
     },
 
     tickers(newValue, oldValue) {
-      // почему не сработал watch при добавлении?
-      console.log(newValue === oldValue);
+      localStorage.setItem("cryptonomicon-list", JSON.stringify(this.tickers));
     },
 
     paginatedTickers() {
@@ -340,18 +358,18 @@ export default {
     },
 
     filter() {
-      window.history.pushState(
-        null,
-        document.title,
-        `${window.location.pathname}?filter=${this.filter}&page=${this.page}`
-      );
+      // изменение фильтра - не должно сбрасывать страницу
+      // так как фильтр изменяется в том числе при created - вчитываются базовые значения
+      // если же изменения вносит именно человек, то @input="this.page = 1"
+      // this.page = 1;
     },
 
-    page() {
+    pageStateOptions(newValue) {
+      console.log("изменяется адресная строка")
       window.history.pushState(
         null,
         document.title,
-        `${window.location.pathname}?filter=${this.filter}&page=${this.page}`
+        `${window.location.pathname}?filter=${newValue.filter}&page=${newValue.page}`
       );
     },
   },
