@@ -144,6 +144,8 @@
 // 2 - плохой интерфейс
 // 1 - некачественный код
 
+import { loadTicker } from './api';
+
 export default {
   name: "App",
 
@@ -237,11 +239,14 @@ export default {
     const tickersData = localStorage.getItem("cryptonomicon-list");
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
-      this.tickers.forEach((ticker) => {
-        this.supscribeToUpdates(ticker.name);
-      });
     }
+
+    setInterval(this.updateTickers, 5000);
   },
+
+      // this.tickers.forEach((ticker) => {
+      //   this.supscribeToUpdates(ticker.name);
+      // }
 
   mounted() {
     fetch("https://min-api.cryptocompare.com/data/all/coinlist?summary=true")
@@ -258,23 +263,43 @@ export default {
   },
 
   methods: {
-    supscribeToUpdates(tickerName) {
-      var myTimer = setInterval(async () => {
-        const f = await fetch(
-          `https://min-api.cryptocompare.com/data/price?fsym=${tickerName}&tsyms=USD&api_key=22011ad9970258f25ff1167ad859166a37782ff8de3b684f78edb72dc7de0fc7`
-        );
-        const data = await f.json();
-        const ticker = this.tickers.find((t) => t.name === tickerName);
-        if (ticker) {
-          ticker.price =
-            data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
-        } else clearInterval(myTimer);
+    async updateTickers() {
+      if (!this.tickers.length) {
+        return;
+      }
 
-        if (this.selectedTicker?.name === tickerName) {
-          this.graph.push(data.USD);
+      const exchangeData = await loadTicker(this.tickers.map(ticker => ticker.name));
+
+      this.tickers.forEach(ticker => {
+        const price = exchangeData[ticker.name.toUpperCase()];
+
+        if (!ticker.price) {
+          ticker.price = "-";
+          return;
         }
-      }, 5000);
+
+        const normalizedPrice = 1 / price;
+        const formatedPrice = normalizedPrice > 1
+          ? normalizedPrice.toFixed(2)
+          : normalizedPrice.toPrecision(2)
+        ticker.price = formatedPrice;
+      });
     },
+
+
+      // supscribeToUpdates(tickerName) {
+      // var myTimer = setInterval(async () => {
+      //   const ticker = this.tickers.find((t) => t.name === tickerName);
+      //   if (ticker) {
+      //     ticker.price =
+      //       exchangeData.USD > 1 
+      //         ? exchangeData.USD.toFixed(2) 
+      //         : exchangeData.USD.toPrecision(2);
+      //   } else clearInterval(myTimer);
+      //   if (this.selectedTicker?.name === tickerName) {
+      //     this.graph.push(exchangeData.USD);
+      //   }
+      // }, 5000);
 
     addTicker(name) {
       name = name.toUpperCase();
@@ -306,7 +331,7 @@ export default {
 
       this.tickers = [...this.tickers, carrentTicker];
 
-      this.supscribeToUpdates(carrentTicker.name);
+      // this.supscribeToUpdates(carrentTicker.name);
 
       this.select(carrentTicker);
       this.ticker = "";
@@ -340,8 +365,8 @@ export default {
     },
   },
 
-//  логика - Когда => То
-// когда что-то изменяется, то делаем что-то
+  //  логика - Когда => То
+  // когда что-то изменяется, то делаем что-то
   watch: {
     selectedTicker() {
       this.graph = [];
