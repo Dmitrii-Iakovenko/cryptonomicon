@@ -144,7 +144,8 @@
 // 2 - плохой интерфейс
 // 1 - некачественный код
 
-import { loadTickers } from './api';
+// import { loadTickers } from './api';
+import { subscribeToTicker, unsubscribeFromTicker } from './api';
 
 export default {
   name: "App",
@@ -239,6 +240,11 @@ export default {
     const tickersData = localStorage.getItem("cryptonomicon-list");
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
+      this.tickers.forEach(ticker => {
+        subscribeToTicker(ticker.name, newPrice => 
+          this.updateTicker(ticker.name, newPrice)
+        );
+      });
     }
 
     setInterval(this.updateTickers, 5000);
@@ -263,28 +269,36 @@ export default {
   },
 
   methods: {
+    updateTicker(tickerName, newPrice) {
+      this.tickers
+        .filter(t => t.name === tickerName)
+        .forEach(t => {
+          t.price = newPrice;
+        });
+    },
+
     formatPrice(price) {
       if (price === "-") {
         return price;
       }
-      return price > 1 ? price.toFixed(2) : price.toPrecision(2)
+      return price > 1 ? Number(price).toFixed(2) : Number(price).toPrecision(2);
     },
 
     async updateTickers() {
-      if (!this.tickers.length) {
-        return;
-      }
+      // if (!this.tickers.length) {
+      //   return;
+      // }
 
-      const exchangeData = await loadTickers(this.tickers.map(ticker => ticker.name));
+      // const exchangeData = await loadTickers(this.tickers.map(ticker => ticker.name));
 
-      this.tickers.forEach(ticker => {
-        const price = exchangeData[ticker.name.toUpperCase()];
-        ticker.price = price ?? "-";
-      });
+      // this.tickers.forEach(ticker => {
+      //   const price = exchangeData[ticker.name.toUpperCase()];
+      //   ticker.price = price ?? "-";
+      // });
 
-      if (this.selectedTicker) {
-        this.graph.push(exchangeData[this.selectedTicker.name.toUpperCase()]);
-      }
+      // if (this.selectedTicker) {
+      //   this.graph.push(exchangeData[this.selectedTicker.name.toUpperCase()]);
+      // }
     },
 
 
@@ -338,6 +352,9 @@ export default {
       this.ticker = "";
       this.filter = "";
       this.changeAutocomplete();
+      subscribeToTicker(carrentTicker.name, newPrice => 
+        this.updateTicker(carrentTicker.name, newPrice)
+      );
     },
 
     removeTicker(tickerToRemove) {
@@ -345,6 +362,7 @@ export default {
         this.selectedTicker = null;
       }
       this.tickers = this.tickers.filter((t) => t != tickerToRemove);
+      unsubscribeFromTicker(tickerToRemove.name);
     },
 
     select(ticker) {
