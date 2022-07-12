@@ -10,11 +10,12 @@ Link: https://youtu.be/0MEpPU3rWCk
 
 
 ## Создание проекта с GitHub
+```bush
 git clone https://github.com/Dmitrii-Iakovenko/cryptonomicon
 cd cryptonomicon
 npm install
 npm run dev
-
+```
 
 ## Создание проекта с нуля
 ```bush
