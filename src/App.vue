@@ -409,7 +409,7 @@ export default {
     },
 
     pageStateOptions(newValue) {
-      console.log("изменяется адресная строка")
+      // console.log("изменяется адресная строка")
       window.history.pushState(
         null,
         document.title,
