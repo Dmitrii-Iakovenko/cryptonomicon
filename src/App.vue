@@ -275,6 +275,10 @@ export default {
         .forEach(t => {
           t.price = newPrice;
         });
+
+      if (this.selectedTicker && this.selectedTicker.name === tickerName) {
+        this.graph.push(newPrice);
+      }
     },
 
     formatPrice(price) {
