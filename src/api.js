@@ -8,44 +8,23 @@ const socket = new WebSocket(`wss://streamer.cryptocompare.com/v2?api_key=${API_
 const AGGREGATE_INDEX = "5";
 
 socket.addEventListener('message', e => {
-    // const messageContent = JSON.parse(e.data);
-    const { TYPE: type, FROMSYMBOL: currency, PRICE: newPrice } = JSON.parse(e.data);
+    const { TYPE: type, FROMSYMBOL: currency, 
+        PRICE: newPrice, PARAMETER: parameter, MESSAGE: message } = JSON.parse(e.data);
+
+    if (type === "500" && message === "INVALID_SUB") {
+        const currencyHasError = [...tickersHandlers.keys()]
+            .filter(ticker => `5~CCCAGG~${ticker}~USD` === parameter);
+        const handlers = tickersHandlers.get(currencyHasError[0]) ?? [];
+        handlers.forEach(fn => fn(undefined, true));
+        return;
+    }
+
     if (type !== AGGREGATE_INDEX || newPrice === undefined) {
         return;
     }
     const handlers = tickersHandlers.get(currency) ?? [];
-    handlers.forEach(fn => fn(newPrice));
+    handlers.forEach(fn => fn(newPrice, false));
 });
-
-// Заменили получение цен по API по таймеру на обновление через WebSocket
-// TODO: refactor to use URLSearhParams
-// const loadTickers = () => {
-//     if (tickersHandlers.size === 0) {
-//         return;
-//     }
-
-//     fetch(
-//         `https://min-api.cryptocompare.com/data/pricemulti?fsyms=${
-//             [...tickersHandlers.keys()]
-//             .join(",")
-//             }&tsyms=USD&api_key=${API_KEY}`
-//         )
-//         .then(response => response.json())
-//         .then(rawData => {
-//             const updatedPrices = Object.fromEntries(
-//                 Object.entries(rawData).map(([key, value]) => [key, value.USD])
-//             );
-
-//             Object.entries(updatedPrices).forEach(([currency, newPrice]) => {
-//                 const handlers = tickersHandlers.get(currency) ?? [];
-//                 handlers.forEach(fn => fn(newPrice));
-//             });
-//         });
-// };
-// 
-// setInterval(loadTickers, 5000);
-
-
 
 function sendToWebSocket(message) {
     const stringifiedMessage = JSON.stringify(message);

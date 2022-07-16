@@ -67,9 +67,14 @@
 
         <hr class="w-full border-t border-gray-600 my-4" />
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
-          <div v-for="t in paginatedTickers" :key="t.name" @click="select(t)" :class="{
-            'border-4': selectedTicker === t,
-          }" class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer">
+          <div v-for="t in paginatedTickers" 
+            :key="t.name" 
+            @click="select(t)" 
+            :class="[
+              { 'border-4': selectedTicker === t },
+              t.hasError ? 'bg-red-100' : 'bg-white',
+            ]" 
+            class="overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer">
             <div class="px-4 py-5 sm:p-6 text-center">
               <dt class="text-sm font-medium text-gray-500 truncate">
                 {{ t.name }} - USD
@@ -241,13 +246,11 @@ export default {
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
       this.tickers.forEach(ticker => {
-        subscribeToTicker(ticker.name, newPrice => 
-          this.updateTicker(ticker.name, newPrice)
+        subscribeToTicker(ticker.name, (newPrice, hasError) => 
+          this.updateTicker(ticker.name, newPrice, hasError)
         );
       });
     }
-
-    setInterval(this.updateTickers, 5000);
   },
 
       // this.tickers.forEach((ticker) => {
@@ -269,11 +272,12 @@ export default {
   },
 
   methods: {
-    updateTicker(tickerName, newPrice) {
+    updateTicker(tickerName, newPrice, hasError) {
       this.tickers
         .filter(t => t.name === tickerName)
         .forEach(t => {
           t.price = newPrice;
+          t.hasError = hasError;
         });
 
       if (this.selectedTicker && this.selectedTicker.name === tickerName) {
@@ -282,43 +286,14 @@ export default {
     },
 
     formatPrice(price) {
+      if (price === undefined) {
+        return "-";
+      }
       if (price === "-") {
         return price;
       }
       return price > 1 ? Number(price).toFixed(2) : Number(price).toPrecision(2);
     },
-
-    async updateTickers() {
-      // if (!this.tickers.length) {
-      //   return;
-      // }
-
-      // const exchangeData = await loadTickers(this.tickers.map(ticker => ticker.name));
-
-      // this.tickers.forEach(ticker => {
-      //   const price = exchangeData[ticker.name.toUpperCase()];
-      //   ticker.price = price ?? "-";
-      // });
-
-      // if (this.selectedTicker) {
-      //   this.graph.push(exchangeData[this.selectedTicker.name.toUpperCase()]);
-      // }
-    },
-
-
-      // supscribeToUpdates(tickerName) {
-      // var myTimer = setInterval(async () => {
-      //   const ticker = this.tickers.find((t) => t.name === tickerName);
-      //   if (ticker) {
-      //     ticker.price =
-      //       exchangeData.USD > 1 
-      //         ? exchangeData.USD.toFixed(2) 
-      //         : exchangeData.USD.toPrecision(2);
-      //   } else clearInterval(myTimer);
-      //   if (this.selectedTicker?.name === tickerName) {
-      //     this.graph.push(exchangeData.USD);
-      //   }
-      // }, 5000);
 
     addTicker(name) {
       name = name.toUpperCase();
@@ -356,8 +331,8 @@ export default {
       this.ticker = "";
       this.filter = "";
       this.changeAutocomplete();
-      subscribeToTicker(carrentTicker.name, newPrice => 
-        this.updateTicker(carrentTicker.name, newPrice)
+      subscribeToTicker(carrentTicker.name, (newPrice, hasError) => 
+        this.updateTicker(carrentTicker.name, newPrice, hasError)
       );
     },
 
