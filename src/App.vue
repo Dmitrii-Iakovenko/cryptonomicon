@@ -8,47 +8,7 @@
     </div> -->
     <div class="container">
       <div class="w-full my-4"></div>
-      <section>
-        <div class="flex">
-          <div class="max-w-xs">
-            <label for="wallet" class="block text-sm font-medium text-gray-700">Тикер</label>
-            <div class="mt-1 relative rounded-md shadow-md">
-              <!-- v-on:chankge="add" -->
-              <input v-model="ticker" @keydown.enter="addTicker(this.ticker)" @input="changeAutocomplete()" type="text"
-                name="wallet" id="wallet"
-                class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
-                placeholder="Например DOGE" />
-            </div>
-            <!-- autocomplete -->
-            <template v-if="autocomplete.length">
-              <div class="flex bg-white p-1 rounded-md shadow-md flex-wrap">
-                <span v-for="ticker in autocomplete" :key="ticker.name" @click="addTicker(ticker.name)"
-                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer">
-                  {{ ticker.name }}
-                </span>
-              </div>
-              <div v-if="autocompleteError" class="text-sm text-red-600">
-                Такой тикер уже добавлен
-              </div>
-              <div v-if="notFoundError" class="text-sm text-red-600">
-                Такой тикер не существует
-              </div>
-            </template>
-          </div>
-        </div>
-        <button @click="addTicker(this.ticker)" type="button"
-          class="my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-          <!-- Heroicon name: solid/mail -->
-          <svg class="-ml-0.5 mr-2 h-6 w-6" xmlns="http://www.w3.org/2000/svg" width="30" height="30"
-            viewBox="0 0 24 24" fill="#ffffff">
-            <path
-              d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z">
-            </path>
-          </svg>
-          Добавить
-        </button>
-      </section>
-
+      <add-ticker @add-ticker="add" :disabled="tooManyTickersAdded"/>
       <template v-if="tickers.length">
         <hr class="w-full border-t border-gray-600 my-4" />
         <div>
@@ -149,13 +109,17 @@
 
 // import { loadTickers } from './api';
 import { subscribeToTicker, unsubscribeFromTicker } from './api';
+import addTicker from './components/AddTicker.vue';
 
 export default {
   name: "App",
 
+  components: {
+    addTicker,
+  },
+
   data() {
     return {
-      ticker: "",
       filter: "",
 
       tickers: [],
@@ -166,14 +130,14 @@ export default {
 
       page: 1,
 
-      autocomplete: [],
-      allTickers: [],
-      autocompleteError: false,
-      notFoundError: false,
     };
   },
 
   computed: {
+    tooManyTickersAdded() {
+      return this.tickers.length > 4;
+    },
+
     startIndex() {
       return (this.page - 1) * 6;
     },
@@ -259,18 +223,6 @@ export default {
       // }
 
   mounted() {
-    fetch("https://min-api.cryptocompare.com/data/all/coinlist?summary=true")
-      .then((response) => response.json())
-      .then((data) =>
-        Object.values(data.Data).forEach((ticker) => {
-          const newTicker = {
-            name: ticker.Symbol,
-            search: ticker.FullName.toUpperCase() + ticker.Symbol.toUpperCase(),
-          };
-          this.allTickers.push(newTicker);
-        })
-      );
-
     window.addEventListener("resize", this.calculateMaxGraphElements);
   },
 
@@ -340,28 +292,10 @@ export default {
       //   }
       // }, 5000);
 
-    addTicker(name) {
+    add(name) {
       name = name.toUpperCase();
 
-      this.autocompleteError = false;
-      this.notFoundError = false;
 
-      // check for non-uniqueness
-      if (
-        this.tickers.filter((ticker) => ticker.name.toUpperCase() === name)
-          .length > 0
-      ) {
-        this.autocompleteError = true;
-        return;
-      }
-
-      // check ticker for correct
-      if (
-        this.allTickers.filter((ticker) => ticker.name === name).length === 0
-      ) {
-        this.notFoundError = true;
-        return;
-      }
 
       const carrentTicker = {
         name: name,
@@ -373,7 +307,6 @@ export default {
       // this.supscribeToUpdates(carrentTicker.name);
 
       this.select(carrentTicker);
-      this.ticker = "";
       this.filter = "";
       this.changeAutocomplete();
       subscribeToTicker(carrentTicker.name, newPrice => 
@@ -393,19 +326,6 @@ export default {
       this.selectedTicker = ticker;
     },
 
-    changeAutocomplete() {
-      this.autocomplete = [];
-      this.autocompleteError = false;
-      this.notFoundError = false;
-      if (this.ticker === "") return;
-      const tag = this.ticker.toUpperCase();
-      for (const ticker of this.allTickers) {
-        if (this.autocomplete.length >= 4) break;
-        if (ticker.search.includes(tag)) {
-          this.autocomplete.push(ticker);
-        }
-      }
-    },
   },
 
   //  логика - Когда => То
