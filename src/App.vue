@@ -95,7 +95,8 @@
           <h3 class="text-lg leading-6 font-medium text-gray-900 my-8">
             {{ selectedTicker.name }} - USD
           </h3>
-          <div class="flex items-end border-gray-600 border-b border-l h-64">
+          <div class="flex items-end border-gray-600 border-b border-l h-64" 
+               ref="graph">
             <div v-for="(bar, idx) in normalizedGraph" :key="idx" :style="{ height: `${bar}%` }"
               class="bg-purple-800 border w-10"></div>
           </div>
@@ -117,15 +118,17 @@
 </template>
 
 <script>
+// H - homework - Домашнее задание
+
 // [x] 6. Наличие в состоянии ЗАВИСИМЫХ ДАНННЫХ | Критичность: 5+
-// [ ] 4. Запросы напрямую внутри компонента | Критичность: 5
-// [ ] 2. При удалении остаётся подписка на загрузку тикера | Критичность: 5
-// [ ] 5. Обработка ошибок API | Критичность: 5
-// [ ] 3. Колличество запросов | Критичность: 4
+// [x] 4. Запросы напрямую внутри компонента | Критичность: 5
+// [x] 2. При удалении остаётся подписка на загрузку тикера | Критичность: 5
+// [H] 5. Обработка ошибок API | Критичность: 5
+// [x] 3. Колличество запросов | Критичность: 4
 // [x] 8. При удалении тикера не изменяется localstorage | Критичность: 4
 // [x] 1. Одинаковый код в watch | Критичность: 3
 // [ ] 9. localstorage и анонимные вкладки| Критичность: 3
-// [ ] 7. График ужасно выглядит если будет много цен | Критичность: 2
+// [x] 7. График ужасно выглядит если будет много цен | Критичность: 2
 // [ ] 10. Магические строки и числа (URL, 5000 ms, ключ localstorage, колличество тикеров на странице) | Критичность: 1
 
 // Параллельно
@@ -159,6 +162,7 @@ export default {
       selectedTicker: null,
 
       graph: [],
+      maxGraphElements: 1,
 
       page: 1,
 
@@ -266,9 +270,22 @@ export default {
           this.allTickers.push(newTicker);
         })
       );
+
+    window.addEventListener("resize", this.calculateMaxGraphElements);
+  },
+
+  beforeUnmount() {
+    window.removeEventListener("resize", this.calculateMaxGraphElements);
   },
 
   methods: {
+    calculateMaxGraphElements() {
+      if (!this.$refs.graph) {
+        return;
+      }
+      this.maxGraphElements = this.$refs.graph.clientWidth / 38;
+    },
+
     updateTicker(tickerName, newPrice) {
       this.tickers
         .filter(t => t.name === tickerName)
@@ -278,6 +295,9 @@ export default {
 
       if (this.selectedTicker && this.selectedTicker.name === tickerName) {
         this.graph.push(newPrice);
+        while (this.graph.length > this.maxGraphElements) {
+          this.graph.shift();
+        }
       }
     },
 
@@ -393,6 +413,8 @@ export default {
   watch: {
     selectedTicker() {
       this.graph = [];
+
+      this.$nextTick().then(this.calculateMaxGraphElements);
     },
 
     tickers(newValue, oldValue) {
